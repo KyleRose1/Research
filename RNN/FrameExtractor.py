@@ -1,8 +1,12 @@
 ###########################################
-# This script gathers raw aux channel data 
-# and whitens and downsamples it
-# using GWPY. It labels all times as glitch 
-# or clean using gw-channel triggers.
+# This script gathers raw input data for the Recurrent Neural Network.
+# We use data from LIGO's auxiliary channels as our input to the RNN. 
+# The RNN correlates activity in these auxiliary channels with glitches in
+# LIGO's primary channel of information: the gravitational-wave channel.
+# We use the package GWpy to access LIGO's data.  We whiten and downsample 
+# the time series data with GWpy. This script also labels all times as either
+# corresponding to a gravitational-wave channel glitch or not corresponding to
+# a gravitational-wave glitch. These labels are used for training the RNN classifier. 
 # 
 # Author: Kyle Rose    6/23/18
 ##########################################
