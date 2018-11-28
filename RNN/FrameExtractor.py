@@ -24,8 +24,8 @@ from laldetchar.idq import idq
 print("Collecting and labelling Aux channel data")
 run=31
 version=11
-gpsstart=1167536688+7*24*3600 
-dur=7*24*3600           #1112889
+gpsstart=1167536688 
+dur=7*24*3600        
 gpsstop=gpsstart+dur
 samplerate=1024.
 fftlength=32
