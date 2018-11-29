@@ -72,18 +72,18 @@ for i,seg in enumerate(locktimes.active): #Loop through lock segments
 		auxdata=TimeSeriesDict.get(channels,seg[0],seg[1],frametype='L1_R',verbose=True) #Generate a dictionary for each
 		for key, value in auxdata.iteritems():
 			#print(value)
-        		value.whiten(fftlength,overlap)
-        		if value.sample_rate.value==samplerate:
+        		value.whiten(fftlength,overlap)  #Whiten the data
+        		if value.sample_rate.value==samplerate:   #Convert all channels to the same samplingrate
                 		continue
         		else:
-				auxdata[key]=auxdata[key].resample(samplerate)
+				auxdata[key]=auxdata[key].resample(samplerate) 
 				assert auxdata[key].sample_rate.value==1024. 
 					
 		datapath='/home/kyle.rose/RNN/runs/%d/version%d/Lockseg%d_%d-%d_Data' % (run,version,(i+10),seg[0],seg[1])	
 		if not os.path.exists(os.path.dirname(datapath)):
         		try:
             			os.makedirs(os.path.dirname(datapath))
-        		except OSError as exc: # Guard against race condition
+        		except OSError as exc: 
             			if exc.errno != errno.EEXIST:
                 			raise
 		print("Len(auxdata)")
@@ -92,13 +92,9 @@ for i,seg in enumerate(locktimes.active): #Loop through lock segments
 		auxdata.write(datapath,format='hdf5') #Save each lock segment
 		### Define time array
 		time=np.arange(float(seg[0]),float(seg[1])+0/samplerate,(1/samplerate),dtype='Float128')
-                print('Length of Time')
-                print(len(time))
 		#for el in time[0:1024*5]:
                         #print('%.9f'% el)
 		labels=np.zeros(Length)
-		print('Length of labels:')
-                print(len(labels))
 		assert(len(time)==len(labels))
 		print("")
 		print("Number of triggers in locksegment %d: %f" %(i,len(darmtrg)))	
@@ -106,7 +102,7 @@ for i,seg in enumerate(locktimes.active): #Loop through lock segments
 		for trig in darmtrg:
 			print("trig")
 			print(trig)
-			startidx=np.where(time==int(trig[col['tstart']]))[0][0] #FIXME This might be bad if a glich happens verrry soon after lock
+			startidx=np.where(time==int(trig[col['tstart']]))[0][0] #FIXME This might be bad if a glich happens Very soon after lock
 			k=0
 			while time[startidx]<trig[col['tstop']]:
 				if time[startidx]>trig[col['tstart']]:
