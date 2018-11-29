@@ -144,7 +144,6 @@ for i,filepath in enumerate(datafile_list):
 				Trulyfinalgps=finalgpstimes
 				i=1
 			else:
-				print("SECONDTIME")
 				Trulyfinaldata=np.append(Trulyfinaldata,sequences,axis=0)
 				Trulyfinallabels=np.append(Trulyfinallabels,finallabels)
 				Trulyfinalgps=np.append(Trulyfinalgps,finalgpstimes)	
