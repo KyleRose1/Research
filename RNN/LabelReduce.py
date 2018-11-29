@@ -17,45 +17,19 @@ import numpy as np
 import math
 import glob
 import h5py
-### In the full day of data.
-#data=np.load('/home/kyle.rose/RNN/runs/13/version1/_whiteneddata.npy')
-#labels=np.loadtxt('/home/kyle.rose/RNN/runs/13/version1/1174953618-1174968018_Labels')
 
 run=30
-#tag='train'
 version=10
-#trainduration=4*3600 #seconds
-#evalduration =3*3600 #seconds
 samplerate=1024  #Hz
 window=1        #seconds
 lengthofsequences=100
 startindex=0
 Framextractorrun=30 #Build data from FrameExtractor data in this ~/RNN/runs/__ directory
 
-#trainstart=startindex
-#trainstop=trainstart+trainduration*samplerate
-#evalstart=trainstop
-#evalstop=evalstart+evalduration*samplerate
-
-#if tag=='train':
-#	data=data[trainstart:trainstop,:]
-#	labels=labels[trainstart:trainstop]
-#elif tag=='eval':
-#	data=data[evalstart:evalstop,:]
-#	labels=labels[evalstart:evalstop]
 finallabelspath='/home/kyle.rose/RNN/runs/%s/vers%sprocessedlabels.npy' % (run, version)
 finalsequencespath='/home/kyle.rose/RNN/runs/%s/vers%sprocessedsequences.npy' % (run, version)
 finalgpstimepath='/home/kyle.rose/RNN/runs/%s/vers%sprocessedgpstimes.npy' % (run, version)
-
-###This code is copied from StackOverflow.com
-def find_nearest(array,value):
-    idx = np.searchsorted(array, value, side="left")
-    if idx > 0 and (idx == len(array) or math.fabs(value - array[idx-1]) < math.fabs(value - array[idx])):
-        return array[idx-1]
-    else:
-        return array[idx]
-###
-
+ 
 datafile_list = sorted(glob.glob('/home/kyle.rose/RNN/runs/%d/version%d' % (Framextractorrun,version) + '/*Data'))
 labelfile_list= sorted(glob.glob('/home/kyle.rose/RNN/runs/%d/version%d' % (Framextractorrun,version) + '/*Labels'))
 gpstimefile_list= sorted(glob.glob('/home/kyle.rose/RNN/runs/%d/version%d' % (Framextractorrun,version) + '/*GPStime'))
@@ -64,6 +38,13 @@ print(labelfile_list)
 print(gpstimefile_list)
 assert(len(datafile_list)==len(labelfile_list))
 assert(len(datafile_list)==len(gpstimefile_list))
+
+def find_nearest(array,value):
+    idx = np.searchsorted(array, value, side="left")
+    if idx > 0 and (idx == len(array) or math.fabs(value - array[idx-1]) < math.fabs(value - array[idx])):
+        return array[idx-1]
+    else:
+        return array[idx]
 
 lockarray={}
 for i,filepath in enumerate(datafile_list):
@@ -99,12 +80,12 @@ for i,filepath in enumerate(datafile_list):
 	#Find the indices of the time/labels arrays where glitches occured
 	print("Obtaining glitch times for lockstretch %d" % i)
 	
-	### For test of only having a single 1 for each glitch rather than multiple 1s.###
-	### Remove all but the last 1 in each group of 1s   7/26/18#######################
+	### For test where we only want one 1 for each glitch rather than multiple 1s.###
+	### Remove all but the last 1 in each group of 1s   7/26/18 ###
 	for p in range(len(labels)-1):
 		if labels[p+1]==1:
 			labels[p]=0
-	##################################################################################
+	####
 	for v in range(len(labels)):
 		if labels[v]==1:
 			glitchindices.append(v) 
@@ -125,35 +106,10 @@ for i,filepath in enumerate(datafile_list):
 
 	###Combine glitch and clean
 	allindices=glitchindices+cleanindices
-	print("Sorting Indices")
 	allindices.sort()
 	print("Length of indices array")
 	print(len(allindices))
-	if len(allindices)>100000:
-		l1=allindices[:5000]
-        	l2=allindices[5000:10000]
-        	l3=allindices[10000:15000]
-	        l4=allindices[15000:20000]
-    		l5=allindices[20000:25000]
-        	l6=allindices[25000:30000]
-        	l7=allindices[30000:35000]
-        	l8=allindices[35000:40000]
-        	l9=allindices[40000:45000]
-        	l10=allindices[450000:50000]
-        	l11=allindices[50000:55000]
-	        l12=allindices[55000:60000]
-        	l13=allindices[60000:65000]
-        	l14=allindices[65000:70000]
-        	l15=allindices[70000:75000]
-        	l16=allindices[75000:80000]
-        	l17=allindices[80000:85000]
-        	l18=allindices[85000:90000]
-        	l19=allindices[90000:95000]
-        	l20=allindices[95000:100000]
-        	l21=allindices[100000:]
-        	pieces=[l1,l2,l3,l4,l5,l6,l7,l8,l9,l10,l11,l12,l13,l14,l15,l16,l17,l18,l19,l20,l21]
-	else:
-		pieces=[allindices]
+	pieces=[allindices]
 
 	### Now create a 'Time series' of sequences and another for labels. These will be fed to the TimeSeriesGenerator for actual batch generation
 	print("Generating Processed Time Series")
@@ -181,29 +137,18 @@ for i,filepath in enumerate(datafile_list):
 					
 			print("len(sequences)")
 			print(len(sequences))
-			#print("len(sequences[0]")
-			#print(len(sequences[0]))
+		
 			if i==0:
 				Trulyfinaldata=sequences
 				Trulyfinallabels=finallabels
 				Trulyfinalgps=finalgpstimes
-				print("FIRSTTIME")
-				print(np.shape(Trulyfinaldata))
-				print(np.shape(Trulyfinallabels))
-				print(np.shape(Trulyfinalgps))
 				i=1
 			else:
 				print("SECONDTIME")
 				Trulyfinaldata=np.append(Trulyfinaldata,sequences,axis=0)
 				Trulyfinallabels=np.append(Trulyfinallabels,finallabels)
 				Trulyfinalgps=np.append(Trulyfinalgps,finalgpstimes)	
- 				print(np.shape(Trulyfinaldata))
-				print(np.shape(Trulyfinallabels))
-				print(np.shape(Trulyfinalgps))
-			
-print(np.shape(Trulyfinaldata))
-print(np.shape(Trulyfinallabels))
-print(np.shape(Trulyfinalgps))
+
 assert(np.shape(Trulyfinallabels)==np.shape(Trulyfinalgps))
 np.save(finallabelspath,Trulyfinallabels)
 np.save(finalsequencespath,Trulyfinaldata)	
