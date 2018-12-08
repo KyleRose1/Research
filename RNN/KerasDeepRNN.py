@@ -26,8 +26,7 @@ run=31
 version=3
 sigma=3      
 
-#model_path_max = '/home/rosek/RNN/runs/%s/version%s/model_max_%s' % (run,version,version)
-#model_path_end = '/home/rosek/RNN/runs/%s/version%s/model_end_%s' % (run,version,version)
+
 eff_path_max = '/home/rosek1/RNN/runs/%s/version%s/eff_maxrun%svers%s' % (run,version,run,version)
 fap_path_max =   '/home/rosek1/RNN/runs/%s/version%s/fap_maxrun%svers%s' % (run,version,run,version)
 eff_err_path_max='/home/rosek1/RNN/runs/%s/version%s/eff_err_maxrun%svers%s' % (run,version,run,version)
@@ -47,15 +46,7 @@ for path in paths:
         except OSError as exc: # Guard against race condition
             if exc.errno != errno.EEXIST:
                 raise
-#sys.stdout.close()
-#print(sys.stdout)
-#sys.stdout = sys.__stdout__
-#print(sys.stdout)
-###Redirect Standard output to a file 
-#orig_stdout = sys.stdout    #Do this so we can reset the stdout at the end
-#f = open('/home/rosek1/RNN/runs/%s/version%s/RNNrun%svers%sinfo.out' % (run,version,run,version),'w')
-#sys.stdout=f
-#print(sys.stdout)
+
 #Batchsize=number of sequences in a batch
 #Timesteps=The length of our sequences (Assuming no sample rate adjustment!)
 #numauxchans=The number of aux channels we're using
@@ -78,27 +69,6 @@ print("labellist")
 print(labels_list1)
 print("gps_list")
 print(gps_list1)
-### glob doesn't always give the files in the right order, so order them correctly here:
-#sorteddata_list=[]
-#sortedlabels_list=[]
-
-#for elm in data_list:
-#        print(int(elm[29:31]))
-#	sorteddata_list.append(int(elm[29:31]))
-#sorteddata_list.sort()
-#data_list1=[]
-#for elem in sorteddata_list:
-#	data_list1.append('/home/rosek1/RNN/runs/%d' % (run) + '/vers'  + '%d' % (elem) + 'processedsequences.npy')	
-#print(data_list1) 
-#
-#for elm in labels_list:
-#	print(int(elm[29:31]))
-#	sortedlabels_list.append(int(elm[29:31]))
-#sortedlabels_list.sort()
-#labels_list1=[]
-#for elem in sortedlabels_list:
-#	labels_list1.append('/home/rosek1/RNN/runs/%d' % (run) + '/vers' + '%d' % (elem) + 'processedlabels.npy')
-#print(labels_list1)
 
 ### Load in all of the data and make 1 huge array of sequences, 1 of labels, and 1 of gps times
 for i in range(len(data_list1)):
@@ -107,11 +77,6 @@ for i in range(len(data_list1)):
 		alldata=np.load(data_list1[i])
 		alllabels=np.load(labels_list1[i])
 		allgps=np.load(gps_list1[i])
-		print(len(alldata))
-		print(np.shape(alldata))
-		print(len(alllabels))
-		if len(alldata)!=len(alllabels) or len(alldata)!=len(allgps):
-			print("DATA and LABELS or GPS NOT EQUAL")
 	else:
                 print(data_list1[i])
 		tempdata =np.load(data_list1[i])
@@ -120,10 +85,6 @@ for i in range(len(data_list1)):
 		alldata  =np.append(alldata,tempdata,axis=0)
 		alllabels=np.append(alllabels,templabel)
 		allgps   =np.append(allgps,tempgps)	
-		print(np.shape(alldata))
-                print(len(alllabels))
-		if len(tempdata)!=len(templabel) or len(tempdata)!=len(tempgps):
-                           print("DATA and LABELS or GPS  NOT EQUAL ")
 
 print("All of the data:")
 print(np.shape(alldata))
@@ -160,24 +121,15 @@ assert(len(evallabels)%timesteps==0)
 assert(len(traindata)==len(trainlabels))
 assert(len(evaldata)==len(evallabels))
 
-#traindata=np.load("/home/rosek/RNN/runs/5/trainprocessedsequences.npy")
-#trainlabels=np.load("/home/rosek/RNN/runs/5/trainprocessedlabels.npy")
-#evaldata=np.load("/home/rosek/RNN/runs/5/evalprocessedsequences.npy")
-#evallabels=np.load("/home/rosek/RNN/runs/5/evalprocessedlabels.npy")
-
 #Offset the labels and gps times by one digit to compensate for the timeseries generator
 trainlabels=np.insert(trainlabels,0,0)    
 evallabels =np.insert(evallabels,0,0)
 traingps   =np.insert(traingps,0,0)
 evalgps    =np.insert(evalgps,0,0)
 
-print("After insertion of 0 to the label arrays:")
-print(np.shape(traindata))
-print(np.shape(trainlabels))
-print(np.shape(evaldata))
-print(np.shape(evallabels))
 assert(np.shape(traingps)==np.shape(trainlabels))
 assert(np.shape(evalgps)==np.shape(evallabels))
+
 #Make the data 2-d if not already:
 if traindata.ndim==1:
 	traindata=np.reshape(traindata,(len(traindata),1))
@@ -191,12 +143,7 @@ if traingps.ndim==1:
 	traingps=np.reshape(traingps,(len(trainlabels),1))
 if evalgps.ndim==1:
 	evalgps=np.reshape(evalgps,(len(evalgps),1))
-print("After making 2d if not already:")
-print(np.shape(traindata))
-print(np.shape(trainlabels))
-print(np.shape(evaldata))
-print(np.shape(evallabels))
-print(np.shape(evalgps))
+
 assert(np.shape(evalgps)==np.shape(evallabels))
 ### Trim the timeseries so that they play nicely with the timeseries generator
 ### This is a bit weird. We keep one sequence of data more than goes evenly into the batches to offset
@@ -214,22 +161,9 @@ traingps   =traingps[:-traincut-1]
 if len(evaldata)%(batchsize*timesteps)==0:
         evalcut=batchsize*timesteps-1
 else:
-	print("len(evaldata)")
-	print(len(evaldata))
-	print("batchsize")
-	print(batchsize)
-	print("timesteps")
-	print(timesteps)
-	print("len(evaldata)%(batchsize*timesteps)-1")
         evalcut=len(evaldata)%(batchsize*timesteps)-1
-	print(evalcut)
-print("evalcut")
-print(evalcut)
-print("np.shape(evaldata)")
-print(np.shape(evaldata))
+	
 evaldata  =evaldata[:-evalcut,:]
-print("np.shape(evaldata[:-evalcut,:])")
-print(np.shape(evaldata))
 evallabels=evallabels[:-evalcut-1]
 evalgps   =evalgps[:-evalcut-1]
 
@@ -239,12 +173,10 @@ assert(len(evallabels)==len(evalgps))
 assert(len(traindata)%timesteps==1)
 assert(len(trainlabels)%timesteps==1)
 assert(len(evaldata)%timesteps==1)
-assert(len(evallabels)%timesteps==1)
 assert(len(evaldata)%(batchsize*timesteps)==1)
-assert(len(traindata)%(batchsize*timesteps)==1)
 assert(len(traingps)%(batchsize*timesteps)==1)
 
-numbatcheseval=int(len(evaldata)/(batchsize*timesteps))
+numbatcheseval =int(len(evaldata)/(batchsize*timesteps))
 numbatchestrain=int(len(traindata)/(batchsize*timesteps))
 
 #Calculate number of cleans/uncleans in evaluation set for error bars later
@@ -261,12 +193,9 @@ for i in range(numtrainsequences):  #Don't take into account the last sequence, 
 	elif truetrainlab[timesteps*(i+1)-1]==0:
 		numcleantrain+=1
 	else:
-		print("something's wrong")
+		print("Something's wrong")
 numevalsequences=int((len(evaldata)-1)/timesteps)
-print("Len(evaldata)")
-print(len(evaldata))
-print("timesteps")
-print(timesteps)
+
 for i in range(numevalsequences):
         trueevallab=evallabels[1:]
         if trueevallab[timesteps*(i+1)-1]==1:
@@ -333,58 +262,32 @@ shuffle=True
 #Evaluate
 evaluationdata=data_gen_eval
 
-model = load_model('/home/rosek1/RNN/runs/31/version1/bestvalidlossmodel_run31vers1.h5')
+#Use a prior model
+#model = load_model('/home/rosek1/RNN/runs/31/version1/bestvalidlossmodel_run31vers1.h5')
 
+#Or make a new one:
 ################ Actually Define Model ######################3
-#model=Sequential()
-#model.add(LSTM(lstmsize,batch_size=batchsize, input_shape=(timesteps,numauxchans),\
-#	activation=activation,recurrent_activation=recurrent_activation,\
-#	return_sequences=return_sequences,stateful=stateful,unit_forget_bias=True))
-#model.add(LSTM(100,activation='tanh',recurrent_activation='hard_sigmoid',return_sequences=False,\
-#	stateful=False,unit_forget_bias=True))
+model=Sequential()
+model.add(LSTM(lstmsize,batch_size=batchsize, input_shape=(timesteps,numauxchans),\
+	activation=activation,recurrent_activation=recurrent_activation,\
+	return_sequences=return_sequences,stateful=stateful,unit_forget_bias=True))
+model.add(LSTM(100,activation='tanh',recurrent_activation='hard_sigmoid',return_sequences=False,\
+	stateful=False,unit_forget_bias=True))
 #model.add(LSTM(100,activation='tanh',recurrent_activation='hard_sigmoid',return_sequences=False,\
 #	stateful=False))
-#model.add(Dense(densesize,activation=denseactivation))
+model.add(Dense(densesize,activation=denseactivation))
 model.compile(loss=loss, optimizer=optimizer, metrics=metrics1)
 
-### Print for future reference
-print("model=Sequential()")
-#print("model.add(LSTM(%s,batch_size=%s, input_shape=(%s,%s),activation=%s,recurrent_activation=%s,return_sequences=%s,stateful=%s))"% (lstmsize,batchsize,timesteps,numauxchans,activation,recurrent_activation,return_sequences,stateful))
-#print('model.add(LSTM(4000,activation=softsign,recurrent_activation=hard_sigmoid,return_sequences=True,stateful=False)')
-#print('model.add(LSTM(1000,activation=tanh,recurrent_activation=hard_sigmoid,return_sequences=False,stateful=False)')
-##print("model.add(Flatten())")
-#print("model.add(Dense(%s,activation=%s))"%(densesize,denseactivation))
-#print("model.compile(loss=%s, optimizer=%s, metrics=%s)"%(loss,optimizer,metrics1))
 print(model.summary())
 
 callbacks1=[EarlyStopping(monitor=erlystpmonitor,min_delta=min_delta,patience=patience,mode=mode),ModelCheckpoint(bestlossmodelpath,monitor=bestlossmonitor,verbose=0,save_best_only=True),ModelCheckpoint(bestvallossmodelpath,monitor=bestvallossmonitor,verbose=0,save_best_only=True)]
-print("callbacks1=[EarlyStopping(monitor=%s,min_delta=%s,patience=%s,mode=%s),ModelCheckpoint(bestlossmodelpath,monitor=%s,verbose=0,save_best_only=True),ModelCheckpoint(bestvallossmodelpath,monitor=bestvallossmonitor,verbose=0,save_best_only=True)]"% (erlystpmonitor,min_delta,patience,mode,bestlossmonitor))
-print(" ")
 
 print("Begin Training")
-#model.fit_generator(trainingdata,epochs=epochs,verbose=2,callbacks=callbacks1,validation_data=validationdata,shuffle=shuffle)
-print("model.fit_generator(%s,epochs=%s,verbose=2,callbacks=callbacks1,validation_data=%s,shuffle=%s)"%(trainingdata,epochs,validationdata,shuffle))
+model.fit_generator(trainingdata,epochs=epochs,verbose=2,callbacks=callbacks1,validation_data=validationdata,shuffle=shuffle)
 print("Done Training")
-
-#Save the model
-#print("Saving Model")
-#model.save(modelpath)
-
-#print(model.metrics_names)
-#model.evaluate_generator(evaluationdata)
-#print('model.evaluate_generator(%s)'% (evaluationdata))
-
-
-
-#model = load_model('/home/rosek/RNN/runs/5/version7/model_run5vers7.h5')
-
 
 print("Begin Evaluation")
 predictions=model.predict_generator(evaluationdata,verbose=1)
-print('predictions=model.predict_generator(%s,verbose=1)'% (evaluationdata))
-print('predictions')
-print(predictions)
-
 print("Done Evaluation")
 
 evalgpstimes=GPS_gen_eval
@@ -426,7 +329,3 @@ fap_err=sigma*np.sqrt((1-fap)*fap/numcleaneval)
 
 np.save(eff_err_path_max,eff_err)
 np.save(fap_err_path_max,fap_err)
-#Reset standard output and close the file.
-#sys.stdout=orig_stdout
-#f.close()
-
