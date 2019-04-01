@@ -1,9 +1,21 @@
-Searches negatively impacted by glitches
-Use machine learning to identify glitches
-iDQ framework (use triggers from aux channels -  correlate with gw channel triggers)
-Discuss ANN and OVL(?)/MVSC(?)
-Discuss original features (and then new features)
+Searches negatively impacted by glitches 
+	- Affect search stats
+	- Removed manually before offline analysis 
+Use iDQ to identify glitches in low-latency
+	- Overview of iDQ
+	- iDQ algorithms correlate safe aux channel activity with gw channel glitches
+Discuss ANN 
+	- OVL(?)/MVSC(?)
+ANN as good as MVSC/OVL
+Feature set expansion
+	- Original features 
+	- New features
 Random feature
+	- Adding info didn't work, try taking it away
+	- ANN does just as well
 Effect of higher gw channel threshold
+	- Higher efficiencies
+	- But finding essentially the same glitches
 Effect of different network architectures
+	- Size/depth of network has no effect on performance
 
